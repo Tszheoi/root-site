@@ -1,11 +1,6 @@
 {
   "links": [
     {
-      "name": "邮箱",
-      "url": "https://mail.aliyun.com/",
-      "tag": "测试角标"
-    },
-    {
       "name": "博客",
       "url": "https://blog.tszheoi-law.top/",
       "tag": ""
@@ -23,6 +18,11 @@
     {
       "name": "介绍页",
       "url": "https://pelakai.tszheoi-law.top/",
+      "tag": ""
+    },
+    {
+      "name": "邮箱",
+      "url": "https://mail.aliyun.com/",
       "tag": ""
     }
   ]
