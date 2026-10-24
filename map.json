@@ -1,14 +1,14 @@
 {
   "links": [
     {
-      "name": "Blog",
-      "url": "https://blog.tszheoi-law.top/",
+      "name": "介绍页",
+      "url": "https://pelakai.tszheoi-law.top/",
       "tag": "",
       "hideHost": true
     },
     {
-      "name": "介绍页",
-      "url": "https://pelakai.tszheoi-law.top/",
+      "name": "Blog",
+      "url": "https://blog.tszheoi-law.top/",
       "tag": "",
       "hideHost": true
     },
