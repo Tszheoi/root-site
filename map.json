@@ -1,14 +1,14 @@
 {
   "links": [
     {
-      "name": "博客",
-      "url": "https://blog.tszheoi-law.top/",
+      "name": "网盘入口",
+      "url": "https://disk.tszheoi-law.top/",
       "tag": "",
       "hideHost": true
     },
     {
-      "name": "网盘入口",
-      "url": "https://disk.tszheoi-law.top/",
+      "name": "博客",
+      "url": "https://blog.tszheoi-law.top/",
       "tag": "",
       "hideHost": true
     },
