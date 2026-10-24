@@ -175,7 +175,7 @@ const VIEW_PAGE = (links) => `<!DOCTYPE html><html lang="zh-CN"><head><meta char
 <div class="grid">
 ${links.length ? links.map(l => `<a class="card" href="${esc(l.url)}" rel="noopener">
   <span class="row1"><span class="nm">${esc(l.name)}</span><span class="arrow">→</span></span>
-  <span class="host">${esc(hostOf(l.url))}</span>
+  ${l.hideHost ? '' : `<span class="host">${esc(hostOf(l.url))}</span>`}
   ${l.tag ? `<span class="tag">${esc(l.tag)}</span>` : ''}
 </a>`).join('\n') : '<div style="grid-column:1/-1;text-align:center;color:#8a90a2;padding:40px 0">还没有条目</div>'}
 </div>
@@ -211,6 +211,10 @@ const ADMIN = (links) => `<!DOCTYPE html><html lang="zh-CN"><head><meta charset=
     <button class="btn ghost" onclick="resetForm()">清空</button>
     <span class="hint" id="edit-hint"></span>
   </div>
+  <div class="row" style="margin-top:12px;padding-top:12px;border-top:1px solid #1e2531">
+    <button class="btn ghost" onclick="toggleAllHosts()" id="btn-host">${links.length && links.every(l => l.hideHost) ? "全部显示域名" : "全部隐藏域名"}</button>
+    <span class="hint" id="host-hint"></span>
+  </div>
 </div>
 
 <div id="list">
@@ -224,6 +228,7 @@ ${links.length ? links.map((l, i) => `<div class="item">
     <div class="u">${esc(l.url)}</div>
   </div>
   <div class="acts">
+    <button class="btn ghost sm" onclick="toggleHost(${i})" title="切换前台是否显示域名">${l.hideHost ? '🚫 域名已隐藏' : '👁 域名显示中'}</button>
     <button class="btn ghost sm" onclick="edit(${i})">编辑</button>
     <button class="btn danger sm" onclick="del(${i})">删除</button>
   </div>
@@ -250,7 +255,8 @@ function submitForm(){
   if(!url){ toast('网址不能为空'); return; }
   if(!/^https?:\\/\\//i.test(url)) url = 'https://' + url;
   var next = links.slice();
-  var item = { name: name, url: url, tag: tag };
+  var keepHide = (editIndex >= 0 && links[editIndex] && links[editIndex].hideHost) ? true : false;
+  var item = { name: name, url: url, tag: tag, hideHost: keepHide };
   if(editIndex >= 0) next[editIndex] = item; else next.push(item);
   save(next);
 }
@@ -266,6 +272,17 @@ function edit(i){
 function del(i){
   if(!confirm('删除「' + (links[i].name || '') + '」？')) return;
   var next = links.slice(); next.splice(i,1); save(next);
+}
+function toggleHost(i){
+  var n = links.slice();
+  var it = n[i] || {};
+  n[i] = { name: it.name, url: it.url, tag: it.tag || '', hideHost: !it.hideHost };
+  save(n);
+}
+function toggleAllHosts(){
+  var allHidden = links.length > 0 && links.every(function(x){ return !!x.hideHost; });
+  var next = links.map(function(x){ return { name: x.name, url: x.url, tag: x.tag || '', hideHost: !allHidden }; });
+  save(next);
 }
 function moveUp(i){ if(i<=0) return; var n=links.slice(); var t=n[i-1]; n[i-1]=n[i]; n[i]=t; save(n); }
 function moveDown(i){ if(i>=links.length-1) return; var n=links.slice(); var t=n[i+1]; n[i+1]=n[i]; n[i]=t; save(n); }
@@ -332,6 +349,7 @@ export async function onRequest(ctx) {
           name: String(x.name || '').trim().slice(0, 60),
           url: String(x.url || '').trim().slice(0, 300),
           tag: String(x.tag || '').trim().slice(0, 20),
+          hideHost: !!x.hideHost,
         })).filter(x => x.name && /^https?:\/\//i.test(x.url));
         try {
           const cur = await ghRead(c);
