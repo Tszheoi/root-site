@@ -169,8 +169,11 @@ const VIEW_PAGE = (links) => `<!DOCTYPE html><html lang="zh-CN"><head><meta char
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#ffffff">
 <title>Map</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%232d3142'/%3E%3Ctext x='50' y='68' font-size='52' font-family='system-ui,sans-serif' font-weight='800' fill='%2352d6a8' text-anchor='middle'%3EM%3C/text%3E%3C/svg%3E">
-<style>${VIEW_STYLE}</style></head><body><main>
+<style>${VIEW_STYLE}</style><link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head><body><main>
 <header><h1>Map</h1><p>去往各处</p></header>
 <div class="grid">
 ${links.length ? links.map(l => `<a class="card" href="${esc(l.url)}" rel="noopener">
@@ -184,7 +187,11 @@ ${links.length ? links.map(l => `<a class="card" href="${esc(l.url)}" rel="noope
 
 const LOGIN = (err) => `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>Map 管理</title>
-<style>${ADMIN_STYLE}</style></head><body><div class="login">
+<style>${ADMIN_STYLE}</style><link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head><body><div class="login">
 <h1>Map 管理</h1><p>请输入密码</p>
 <form method="POST" action="/map/tsz">
 <input type="hidden" name="action" value="login">
@@ -195,7 +202,11 @@ ${err ? `<div class="err">${esc(err)}</div>` : ''}
 
 const ADMIN = (links) => `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>Map 管理</title>
-<style>${ADMIN_STYLE}</style></head><body><div class="wrap">
+<style>${ADMIN_STYLE}</style><link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head><body><div class="wrap">
 <div class="top"><h1>Map 管理</h1><div class="row">
 <a class="btn ghost sm" href="/map" target="_blank">看页面</a>
 <button class="btn ghost sm" onclick="logout()">退出</button></div></div>
