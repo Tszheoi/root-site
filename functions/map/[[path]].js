@@ -176,7 +176,6 @@ const VIEW_PAGE = (links) => `<!DOCTYPE html><html lang="zh-CN"><head><meta char
 ${links.length ? links.map(l => `<a class="card" href="${esc(l.url)}" rel="noopener">
   <span class="row1"><span class="nm">${esc(l.name)}</span><span class="arrow">→</span></span>
   <span class="host">${esc(hostOf(l.url))}</span>
-  ${l.tag ? `<span class="tag">${esc(l.tag)}</span>` : ''}
 </a>`).join('\n') : '<div style="grid-column:1/-1;text-align:center;color:#8a90a2;padding:40px 0">还没有条目</div>'}
 </div>
 <footer><span>只有知道这个地址的人能看到本页</span></footer>
@@ -204,7 +203,7 @@ const ADMIN = (links) => `<!DOCTYPE html><html lang="zh-CN"><head><meta charset=
   <div class="row">
     <input class="inp" id="f-name" placeholder="名称，如 博客" style="flex:1 1 140px">
     <input class="inp" id="f-url" placeholder="网址，如 https://blog.example.com" style="flex:2 1 240px">
-    <input class="inp" id="f-tag" placeholder="角标（选填）" style="flex:0 1 110px">
+
   </div>
   <div class="row" style="margin-top:10px">
     <button class="btn" id="btn-save" onclick="submitForm()">添加</button>
@@ -220,7 +219,7 @@ ${links.length ? links.map((l, i) => `<div class="item">
     <button class="mv" onclick="moveDown(${i})" ${i === links.length - 1 ? 'disabled' : ''}>▼</button>
   </div>
   <div class="meta">
-    <div class="n">${esc(l.name)}${l.tag ? ` <span style="font-size:11px;color:#6b7488">[${esc(l.tag)}]</span>` : ''}</div>
+    <div class="n">${esc(l.name)}</div>
     <div class="u">${esc(l.url)}</div>
   </div>
   <div class="acts">
@@ -238,26 +237,26 @@ var editIndex = -1;
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.className='toast on';setTimeout(function(){t.className='toast'},1800);}
 function resetForm(){
   editIndex = -1;
-  ['f-name','f-url','f-tag'].forEach(function(id){ document.getElementById(id).value = ''; });
+  ['f-name','f-url'].forEach(function(id){ document.getElementById(id).value = ''; });
   document.getElementById('btn-save').textContent = '添加';
   document.getElementById('edit-hint').textContent = '';
 }
 function submitForm(){
   var name = document.getElementById('f-name').value.trim();
   var url = document.getElementById('f-url').value.trim();
-  var tag = document.getElementById('f-tag').value.trim();
+
   if(!name){ toast('名称不能为空'); return; }
   if(!url){ toast('网址不能为空'); return; }
   if(!/^https?:\\/\\//i.test(url)) url = 'https://' + url;
   var next = links.slice();
-  var item = { name: name, url: url, tag: tag };
+  var item = { name: name, url: url };
   if(editIndex >= 0) next[editIndex] = item; else next.push(item);
   save(next);
 }
 function edit(i){
   document.getElementById('f-name').value = links[i].name || '';
   document.getElementById('f-url').value = links[i].url || '';
-  document.getElementById('f-tag').value = links[i].tag || '';
+
   editIndex = i;
   document.getElementById('btn-save').textContent = '保存修改';
   document.getElementById('edit-hint').textContent = '正在编辑：' + (links[i].name || '');
@@ -331,7 +330,7 @@ export async function onRequest(ctx) {
         const clean = list.map(x => ({
           name: String(x.name || '').trim().slice(0, 60),
           url: String(x.url || '').trim().slice(0, 300),
-          tag: String(x.tag || '').trim().slice(0, 20),
+
         })).filter(x => x.name && /^https?:\/\//i.test(x.url));
         try {
           const cur = await ghRead(c);
