@@ -7,6 +7,12 @@
       "hideHost": true
     },
     {
+      "name": "云盘",
+      "url": "https://nas.tszheoi-law.top/",
+      "tag": "",
+      "hideHost": false
+    },
+    {
       "name": "博客",
       "url": "https://blog.tszheoi-law.top/",
       "tag": "",
