@@ -4,31 +4,31 @@
       "name": "博客",
       "url": "https://blog.tszheoi-law.top/",
       "tag": "",
-      "hideHost": true
+      "hideHost": false
     },
     {
       "name": "网盘入口",
       "url": "https://disk.tszheoi-law.top/",
       "tag": "",
-      "hideHost": true
+      "hideHost": false
     },
     {
       "name": "订阅",
       "url": "https://list.tszheoi-law.top/",
       "tag": "",
-      "hideHost": true
+      "hideHost": false
     },
     {
       "name": "介绍页",
       "url": "https://pelakai.tszheoi-law.top/",
       "tag": "",
-      "hideHost": true
+      "hideHost": false
     },
     {
       "name": "邮箱",
       "url": "https://mail.aliyun.com/",
       "tag": "",
-      "hideHost": true
+      "hideHost": false
     }
   ]
 }
