@@ -107,6 +107,17 @@ async function ghWrite(c, links, sha) {
   return j;
 }
 
+// ---------- 邮件 / 验证记录（有新记录时在这里补一条）----------
+const MAIL_RECORDS = [
+  { type: 'MX', name: 'mail', value: 'mx1.qiye.aliyun.com', purpose: '接收邮件（优先级由服务商分配）' },
+  { type: 'MX', name: 'mail', value: 'mx2.qiye.aliyun.com', purpose: '接收邮件（冗余）' },
+  { type: 'MX', name: 'mail', value: 'mx3.qiye.aliyun.com', purpose: '接收邮件（冗余）' },
+  { type: 'TXT', name: 'mail', value: 'v=spf1 include:spf.qiye.aliyun.com -all', purpose: 'SPF：允许阿里云企业邮代发' },
+  { type: 'TXT', name: '_dmarc.mail', value: 'v=DMARC1; p=none; sp=none; adkim=r; aspf=r; rua=mailto:postmaster@mail.tszheoi-law.top', purpose: 'DMARC 策略（当前仅监控）' },
+  { type: 'CNAME', name: 'alimaild41cda', value: 'qiye.aliyun.com', purpose: '阿里云邮箱域名验证' },
+  { type: 'CNAME', name: 'alimaild41cda.mail', value: 'qiye.aliyun.com', purpose: '阿里云邮箱子域验证' },
+];
+
 // ---------- 前台样式 ----------
 const VIEW_STYLE = `:root{color-scheme:light dark;--bg:#ffffff;--bg-soft:#f7f9fb;--card:#ffffff;--ink:#2d3142;--ink-soft:#6b7280;--ink-faint:#9aa3b2;--line:#e8ecf1;--accent:#52d6a8;--accent-strong:#2fae86;--accent-soft:#e9f9f3}
 @media (prefers-color-scheme: dark){:root{color-scheme:dark;--bg:#171b23;--bg-soft:#1f242e;--card:#1f242e;--ink:#e6e9ef;--ink-soft:#a9b1bf;--ink-faint:#7c8595;--line:#2b313d;--accent:#52d6a8;--accent-strong:#74e2bd;--accent-soft:#1e3a31}}
@@ -142,6 +153,14 @@ footer span{font-size:11.5px;color:var(--ink-faint);opacity:.75}
 .btn.solid{width:100%;background:var(--accent);border-color:var(--accent);color:#10281f;padding:11px 14px;font-size:14px;font-weight:700}
 .btn.solid:hover{background:var(--accent-strong);border-color:var(--accent-strong);color:#fff}
 .err{color:var(--danger,#c0392b);font-size:13px;margin-top:10px}
+.recs{margin-top:8px;border-top:1px solid var(--line)}
+.rec{display:flex;gap:14px;padding:14px 2px;border-bottom:1px solid var(--line);align-items:flex-start}
+.rt{flex:0 0 58px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;font-weight:700;color:var(--accent-strong);border:1px solid rgba(82,214,168,.35);border-radius:6px;padding:2px 7px;text-align:center}
+.rb{flex:1;min-width:0}
+.rn{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;color:var(--ink);word-break:break-all}
+.rv{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:var(--ink-soft);margin-top:3px;word-break:break-all}
+.rp{font-size:12px;color:var(--ink-faint);margin-top:4px}
+header .sub2{margin-top:10px;color:var(--ink-faint);font-size:13px}
 @media(prefers-reduced-motion:reduce){a.card{transition:none}}
 `;
 
@@ -232,6 +251,31 @@ const VIEW_LOGIN = (err) => `<!DOCTYPE html><html lang="zh-CN"><head><meta chars
   </form>
   ${err ? `<div class="err">${esc(err)}</div>` : ''}
 </div>
+</main></body></html>`;
+
+const MAIL_PAGE = (rows, role) => `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#171b23" media="(prefers-color-scheme: dark)">
+<title>邮件记录 · Map</title>
+<style>${VIEW_STYLE}</style><link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head><body><main>
+<header><h1>邮件记录</h1><p class="sub2">mail.tszheoi-law.top 的 MX / SPF / DMARC / 域名验证记录 · 共 ${rows.length} 条</p></header>
+<div class="recs">
+${rows.map(r => `<div class="rec">
+  <span class="rt">${esc(r.type)}</span>
+  <div class="rb">
+    <div class="rn">${esc(r.name)}.tszheoi-law.top</div>
+    <div class="rv">${esc(r.value)}</div>
+    <div class="rp">${esc(r.purpose)}</div>
+  </div>
+</div>`).join('\n')}
+</div>
+<footer><a class="btn" href="/map">← 返回 Map</a></footer>
 </main></body></html>`;
 
 const LOGIN = (err) => `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
@@ -436,6 +480,13 @@ export async function onRequest(ctx) {
     }
 
     return JSONR({ ok: false, error: 'Method Not Allowed' }, 405);
+  }
+
+  // ---------- 邮件记录页 /map/mail ----------
+  if (sub === 'mail') {
+    if (request.method !== 'GET') return JSONR({ ok: false, error: 'Method Not Allowed' }, 405);
+    if (!role) return HTML(VIEW_LOGIN(''));
+    return HTML(MAIL_PAGE(MAIL_RECORDS, role));
   }
 
   // ---------- 前台 /map（需要访问密码）----------
