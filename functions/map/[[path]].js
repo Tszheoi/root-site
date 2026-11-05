@@ -318,7 +318,7 @@ function submitForm(){
   var note = document.getElementById('f-note').value.trim();
   if(!name){ toast('名称不能为空'); return; }
   if(!url){ toast('网址不能为空'); return; }
-  if(!/^https?:\\/\\//i.test(url)) url = 'https://' + url;
+  if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
   var next = links.slice();
   var keepHide = (editIndex >= 0 && links[editIndex] && links[editIndex].hideHost) ? true : false;
   var item = { name: name, url: url, tag: tag, note: note, hideHost: keepHide };
