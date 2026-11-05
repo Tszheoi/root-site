@@ -1,25 +1,30 @@
 {
   "links": [
     { "name": "主页", "url": "https://tszheoi-law.top/", "tag": "名片", "note": "根域名片页", "hideHost": false },
+    { "name": "介绍页", "url": "https://pelakai.tszheoi-law.top/", "tag": "名片", "note": "个人介绍 / 联系方式", "hideHost": false },
+    { "name": "Map", "url": "https://tszheoi-law.top/map", "tag": "导航", "note": "本页 · 需密码", "hideHost": false },
+
     { "name": "Pelakai 博客", "url": "https://blog.tszheoi-law.top/", "tag": "博客", "note": "Hugo · PaperMod", "hideHost": false },
     { "name": "ToM 博客", "url": "https://m.blog.tszheoi-law.top/", "tag": "博客", "note": "Hugo · 需密码", "hideHost": false },
     { "name": "myx 博客", "url": "https://myx.tszheoi-law.top/", "tag": "博客", "note": "Hugo · 空站 · 需密码", "hideHost": false },
-    { "name": "介绍页", "url": "https://pelakai.tszheoi-law.top/", "tag": "名片", "note": "个人介绍 / 联系方式", "hideHost": false },
+    { "name": "TszTool 下载", "url": "https://tsztool.tszheoi-law.top/", "tag": "下载", "note": "鸿蒙 11/10 线 + Android 安装包", "hideHost": false },
+
     { "name": "订阅管理", "url": "https://list.tszheoi-law.top/", "tag": "工具", "note": "前台需密码 · 后台需密码", "hideHost": false },
     { "name": "网盘入口", "url": "https://disk.tszheoi-law.top/", "tag": "工具", "note": "链接集合 · 后台需密码", "hideHost": false },
-    { "name": "TszTool 下载", "url": "https://tsztool.tszheoi-law.top/", "tag": "下载", "note": "鸿蒙 11/10 线 + Android 安装包", "hideHost": false },
+
+    { "name": "邮件记录", "url": "https://tszheoi-law.top/map/mail", "tag": "记录", "note": "MX / SPF / DMARC / 域名验证 · 点开查看全部", "hideHost": false },
+    { "name": "邮箱", "url": "https://mail.aliyun.com/", "tag": "邮箱", "note": "mail.tszheoi-law.top · 阿里云企业邮（MX）", "hideHost": false },
+
     { "name": "DSH 网关", "url": "https://dsh.tszheoi-law.top/", "tag": "隧道", "note": "Cloudflare Tunnel · 需登录", "hideHost": false },
     { "name": "NAS", "url": "https://nas.tszheoi-law.top/", "tag": "隧道", "note": "Cloudflare Tunnel · Coming soon", "hideHost": false },
     { "name": "反诈演示", "url": "https://dsh-fake.tszheoi-law.top/", "tag": "Demo", "note": "仿冒付费弹窗 · 二维码提示谨防诈骗", "hideHost": false },
-    { "name": "邮箱", "url": "https://mail.aliyun.com/", "tag": "邮箱", "note": "mail.tszheoi-law.top · 阿里云企业邮（MX）", "hideHost": false },
-    { "name": "邮件记录", "url": "https://tszheoi-law.top/map/mail", "tag": "记录", "note": "MX / SPF / DMARC / 域名验证 · 点开查看全部", "hideHost": false },
-    { "name": "Map", "url": "https://tszheoi-law.top/map", "tag": "导航", "note": "本页 · 需密码", "hideHost": false },
+
     { "name": "博客后台 · Pelakai", "url": "https://blog.tszheoi-law.top/tsz", "tag": "后台", "note": "文章管理 · 需密码", "hideHost": false },
     { "name": "博客后台 · ToM", "url": "https://m.blog.tszheoi-law.top/tsz", "tag": "后台", "note": "文章管理 · 需密码", "hideHost": false },
     { "name": "博客后台 · myx", "url": "https://myx.tszheoi-law.top/tsz", "tag": "后台", "note": "文章管理 · 需密码", "hideHost": false },
+    { "name": "TszTool 后台", "url": "https://tsztool.tszheoi-law.top/tsz", "tag": "后台", "note": "上传 / 删除 / 排序安装包 · 需密码", "hideHost": false },
     { "name": "订阅后台", "url": "https://list.tszheoi-law.top/tsz", "tag": "后台", "note": "增删改订阅 · 需密码", "hideHost": false },
     { "name": "网盘后台", "url": "https://disk.tszheoi-law.top/tsz", "tag": "后台", "note": "链接管理 · 需密码", "hideHost": false },
-    { "name": "导航后台", "url": "https://tszheoi-law.top/map/tsz", "tag": "后台", "note": "管理本页条目 · 需密码", "hideHost": false },
-    { "name": "TszTool 后台", "url": "https://tsztool.tszheoi-law.top/tsz", "tag": "后台", "note": "上传 / 删除 / 排序安装包 · 需密码", "hideHost": false }
+    { "name": "导航后台", "url": "https://tszheoi-law.top/map/tsz", "tag": "后台", "note": "管理本页条目 · 需密码", "hideHost": false }
   ]
 }
