@@ -41,25 +41,27 @@ async function hmac(secret, msg) {
   for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
   return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
-async function makeSession(secret) {
+async function makeSession(secret, role) {
   const exp = Date.now() + SESSION_DAYS * 86400 * 1000;
-  return exp + '.' + await hmac(secret, String(exp));
+  return exp + '.' + role + '.' + await hmac(secret, exp + '.' + role);
 }
 async function verifySession(secret, token) {
-  if (typeof token !== 'string') return false;
-  const i = token.lastIndexOf('.');
-  if (i <= 0) return false;
-  const exp = token.slice(0, i), sig = token.slice(i + 1);
-  const expect = await hmac(secret, exp);
-  if (sig.length !== expect.length) return false;
+  if (typeof token !== 'string') return null;
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
+  const [exp, role, sig] = parts;
+  const expect = await hmac(secret, exp + '.' + role);
+  if (sig.length !== expect.length) return null;
   let diff = 0;
   for (let k = 0; k < sig.length; k++) diff |= sig.charCodeAt(k) ^ expect.charCodeAt(k);
-  if (diff !== 0) return false;
-  return Number(exp) > Date.now();
+  if (diff !== 0) return null;
+  if (Number(exp) <= Date.now()) return null;
+  return role === 'admin' || role === 'view' ? role : null;
 }
 function cfg(env) {
   const e = env || {};
   return {
+    viewPw: e.VIEW_PASSWORD || '6966@map',
     password: e.ADMIN_PASSWORD || '6966@Map',
     secret: e.ADMIN_SECRET || 'root-map-default-secret-change-me',
     token: e.GITHUB_TOKEN || '',
@@ -124,8 +126,22 @@ a.card:active{transform:scale(.99)}
 .arrow{color:var(--accent-strong);font-weight:800;font-size:15px;line-height:1}
 .host{font-size:12px;color:var(--ink-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tag{align-self:flex-start;margin-top:5px;display:inline-block;line-height:1.5;font-size:10.5px;color:var(--ink-faint);border:1px solid var(--line);border-radius:999px;padding:2px 9px}
-footer{margin-top:34px;text-align:center}
+footer{margin-top:34px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
 footer span{font-size:11.5px;color:var(--ink-faint);opacity:.75}
+.note{font-size:12px;color:var(--ink-soft);margin-top:3px;line-height:1.5}
+.btn{border:1px solid var(--line);background:var(--bg-soft);color:var(--ink-soft);border-radius:9px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn:hover{background:var(--accent-soft);color:var(--ink);border-color:var(--accent)}
+.loginbox{max-width:340px;margin:14vh auto;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:30px 26px 26px}
+.dotline{display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:14px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(82,214,168,.18)}
+.lbl{font-size:13px;font-weight:700;color:var(--ink-soft)}
+.lt{font-size:20px;font-weight:800;letter-spacing:-.01em}
+.ls{color:var(--ink-faint);font-size:12.5px;margin:6px 0 18px}
+.inp{width:100%;background:var(--bg-soft);border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:11px 13px;outline:none;font-size:14px;margin-bottom:10px}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(82,214,168,.16)}
+.btn.solid{width:100%;background:var(--accent);border-color:var(--accent);color:#10281f;padding:11px 14px;font-size:14px;font-weight:700}
+.btn.solid:hover{background:var(--accent-strong);border-color:var(--accent-strong);color:#fff}
+.err{color:var(--danger,#c0392b);font-size:13px;margin-top:10px}
 @media(prefers-reduced-motion:reduce){a.card{transition:none}}
 `;
 
@@ -166,26 +182,56 @@ h1{font-size:19px;margin:0}
 @media(max-width:600px){.item{flex-wrap:wrap}.meta{flex:1 0 100%}}
 `;
 
-const VIEW_PAGE = (links) => `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
+const VIEW_PAGE = (links, role) => `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
 <meta name="referrer" content="no-referrer">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#171b23" media="(prefers-color-scheme: dark)">
 <title>Map</title>
 <style>${VIEW_STYLE}</style><link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 </head><body><main>
-<header><h1>Map</h1><p>去往各处</p></header>
+<header><h1>Map</h1><p>去往各处 · 共 ${links.length} 个入口</p></header>
 <div class="grid">
 ${links.length ? links.map(l => `<a class="card" href="${esc(l.url)}" rel="noopener">
   <span class="row1"><span class="nm">${esc(l.name)}</span><span class="arrow">→</span></span>
   ${l.hideHost ? '' : `<span class="host">${esc(hostOf(l.url))}</span>`}
+  ${l.note ? `<span class="note">${esc(l.note)}</span>` : ''}
   ${l.tag ? `<span class="tag">${esc(l.tag)}</span>` : ''}
-</a>`).join('\n') : '<div style="grid-column:1/-1;text-align:center;color:#8a90a2;padding:40px 0">还没有条目</div>'}
+</a>`).join('\n') : '<div style="grid-column:1/-1;text-align:center;color:var(--ink-faint);padding:40px 0">还没有条目</div>'}
 </div>
-<footer><span>只有知道这个地址的人能看到本页</span></footer>
+<footer>
+  <span>仅持有访问密码者可查看</span>
+  <button class="btn" onclick="logout()">退出</button>
+</footer>
+<script>
+function logout(){ fetch('/map', {method:'POST', headers:{'content-type':'application/json'},
+  body: JSON.stringify({action:'logout'})}).then(function(){ location.reload(); }); }
+</script>
+</main></body></html>`;
+
+const VIEW_LOGIN = (err) => `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Map</title>
+<meta name="robots" content="noindex,nofollow">
+<style>${VIEW_STYLE}</style><link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head><body><main>
+<div class="loginbox">
+  <div class="dotline"><span class="dot"></span><span class="lbl">Map</span></div>
+  <h1 class="lt">需要密码</h1>
+  <p class="ls">这个导航页只对知情者开放</p>
+  <form method="POST" action="/map">
+    <input type="hidden" name="action" value="login">
+    <input class="inp" type="password" name="pw" placeholder="访问密码" autofocus autocomplete="current-password">
+    <button class="btn solid" type="submit">进入</button>
+  </form>
+  ${err ? `<div class="err">${esc(err)}</div>` : ''}
+</div>
 </main></body></html>`;
 
 const LOGIN = (err) => `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
@@ -221,6 +267,9 @@ const ADMIN = (links) => `<!DOCTYPE html><html lang="zh-CN"><head><meta charset=
     <input class="inp" id="f-tag" placeholder="角标（选填）" style="flex:0 1 110px">
   </div>
   <div class="row" style="margin-top:10px">
+    <input class="inp" id="f-note" placeholder="说明（选填，会在前台显示，如：Hugo 博客 · 需密码）" style="flex:1 1 320px">
+  </div>
+  <div class="row" style="margin-top:10px">
     <button class="btn" id="btn-save" onclick="submitForm()">添加</button>
     <button class="btn ghost" onclick="resetForm()">清空</button>
     <span class="hint" id="edit-hint"></span>
@@ -240,6 +289,7 @@ ${links.length ? links.map((l, i) => `<div class="item">
   <div class="meta">
     <div class="n">${esc(l.name)}${l.tag ? ` <span style="font-size:11px;color:#6b7488">[${esc(l.tag)}]</span>` : ''}</div>
     <div class="u">${esc(l.url)}</div>
+    ${l.note ? `<div class="t">${esc(l.note)}</div>` : ''}
   </div>
   <div class="acts">
     <button class="btn ghost sm" onclick="toggleHost(${i})" title="切换前台是否显示域名">${l.hideHost ? '🚫 域名已隐藏' : '👁 域名显示中'}</button>
@@ -257,7 +307,7 @@ var editIndex = -1;
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.className='toast on';setTimeout(function(){t.className='toast'},1800);}
 function resetForm(){
   editIndex = -1;
-  ['f-name','f-url','f-tag'].forEach(function(id){ document.getElementById(id).value = ''; });
+  ['f-name','f-url','f-tag','f-note'].forEach(function(id){ document.getElementById(id).value = ''; });
   document.getElementById('btn-save').textContent = '添加';
   document.getElementById('edit-hint').textContent = '';
 }
@@ -265,12 +315,13 @@ function submitForm(){
   var name = document.getElementById('f-name').value.trim();
   var url = document.getElementById('f-url').value.trim();
   var tag = document.getElementById('f-tag').value.trim();
+  var note = document.getElementById('f-note').value.trim();
   if(!name){ toast('名称不能为空'); return; }
   if(!url){ toast('网址不能为空'); return; }
   if(!/^https?:\\/\\//i.test(url)) url = 'https://' + url;
   var next = links.slice();
   var keepHide = (editIndex >= 0 && links[editIndex] && links[editIndex].hideHost) ? true : false;
-  var item = { name: name, url: url, tag: tag, hideHost: keepHide };
+  var item = { name: name, url: url, tag: tag, note: note, hideHost: keepHide };
   if(editIndex >= 0) next[editIndex] = item; else next.push(item);
   save(next);
 }
@@ -278,6 +329,7 @@ function edit(i){
   document.getElementById('f-name').value = links[i].name || '';
   document.getElementById('f-url').value = links[i].url || '';
   document.getElementById('f-tag').value = links[i].tag || '';
+  document.getElementById('f-note').value = links[i].note || '';
   editIndex = i;
   document.getElementById('btn-save').textContent = '保存修改';
   document.getElementById('edit-hint').textContent = '正在编辑：' + (links[i].name || '');
@@ -290,12 +342,12 @@ function del(i){
 function toggleHost(i){
   var n = links.slice();
   var it = n[i] || {};
-  n[i] = { name: it.name, url: it.url, tag: it.tag || '', hideHost: !it.hideHost };
+  n[i] = { name: it.name, url: it.url, tag: it.tag || '', note: it.note || '', hideHost: !it.hideHost };
   save(n);
 }
 function toggleAllHosts(){
   var allHidden = links.length > 0 && links.every(function(x){ return !!x.hideHost; });
-  var next = links.map(function(x){ return { name: x.name, url: x.url, tag: x.tag || '', hideHost: !allHidden }; });
+  var next = links.map(function(x){ return { name: x.name, url: x.url, tag: x.tag || '', note: x.note || '', hideHost: !allHidden }; });
   save(next);
 }
 function moveUp(i){ if(i<=0) return; var n=links.slice(); var t=n[i-1]; n[i-1]=n[i]; n[i]=t; save(n); }
@@ -316,38 +368,43 @@ export async function onRequest(ctx) {
   const c = cfg(ctx.env);
   const { request } = ctx;
   const url = new URL(request.url);
-  const sub = url.pathname.replace(/^\/map\/?/, '').replace(/\/$/, ''); // '' 或 'tsz'
+  const sub = url.pathname.replace(/^\/map\/?/, '').replace(/\/$/, '');
 
   const HTML = (body, status) => new Response(body, { status: status || 200, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
   const JSONR = (o, status, extra) => new Response(JSON.stringify(o), { status: status || 200, headers: Object.assign({ 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }, extra || {}) });
 
   const cookies = parseCookies(request.headers.get('cookie'));
-  const loggedIn = await verifySession(c.secret, cookies[COOKIE]).catch(() => false);
+  const role = await verifySession(c.secret, cookies[COOKIE]).catch(() => null);
+  const isAdmin = role === 'admin';
 
-  // ---------- 后台 ----------
+  async function readBody() {
+    let body = {};
+    const ct = request.headers.get('content-type') || '';
+    try {
+      if (ct.includes('application/json')) body = await request.json();
+      else { const fd = await request.formData(); fd.forEach((v, k) => { body[k] = v; }); }
+    } catch (e) { }
+    return body;
+  }
+
+  // ---------- 后台 /map/tsz ----------
   if (sub === 'tsz') {
     if (request.method === 'GET') {
-      if (!loggedIn) return HTML(LOGIN(''));
+      if (!isAdmin) return HTML(LOGIN(''));
       let links = [];
       try { links = (await ghRead(c)).links; } catch (e) { return HTML(LOGIN('读取数据失败：' + esc(e.message))); }
       return HTML(ADMIN(links));
     }
 
     if (request.method === 'POST') {
-      let body = {};
-      const ct = request.headers.get('content-type') || '';
-      try {
-        if (ct.includes('application/json')) body = await request.json();
-        else { const fd = await request.formData(); fd.forEach((v, k) => { body[k] = v; }); }
-      } catch (e) { }
-
+      const body = await readBody();
       const action = body.action;
+      const ct = request.headers.get('content-type') || '';
 
       if (action === 'login') {
         if (String(body.pw || '') !== c.password) return HTML(LOGIN('密码不对'), 401);
-        const token = await makeSession(c.secret);
-        const cookie = `${COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_DAYS * 86400}`;
-        if (ct.includes('application/json')) return JSONR({ ok: true }, 200, { 'set-cookie': cookie });
+        const cookie = `${COOKIE}=${encodeURIComponent(await makeSession(c.secret, 'admin'))}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_DAYS * 86400}`;
+        if (ct.includes('application/json')) return JSONR({ ok: true, role: 'admin' }, 200, { 'set-cookie': cookie });
         return new Response(null, { status: 303, headers: { location: '/map/tsz', 'set-cookie': cookie } });
       }
 
@@ -355,7 +412,7 @@ export async function onRequest(ctx) {
         return JSONR({ ok: true }, 200, { 'set-cookie': `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` });
       }
 
-      if (!loggedIn) return JSONR({ ok: false, error: '未登录' }, 401);
+      if (!isAdmin) return JSONR({ ok: false, error: '未登录' }, 401);
 
       if (action === 'save') {
         const list = Array.isArray(body.links) ? body.links : [];
@@ -363,6 +420,7 @@ export async function onRequest(ctx) {
           name: String(x.name || '').trim().slice(0, 60),
           url: String(x.url || '').trim().slice(0, 300),
           tag: String(x.tag || '').trim().slice(0, 20),
+          note: String(x.note || '').trim().slice(0, 80),
           hideHost: !!x.hideHost,
         })).filter(x => x.name && /^https?:\/\//i.test(x.url));
         try {
@@ -380,13 +438,30 @@ export async function onRequest(ctx) {
     return JSONR({ ok: false, error: 'Method Not Allowed' }, 405);
   }
 
-  // ---------- 前台 ----------
-  if (request.method !== 'GET') return new Response('405', { status: 405 });
-  let links = [];
-  try {
-    links = (await ghRead(c)).links;
-  } catch (e) {
-    links = [];
+  // ---------- 前台 /map（需要访问密码）----------
+  if (request.method === 'GET') {
+    if (!role) return HTML(VIEW_LOGIN(''));
+    let links = [];
+    try { links = (await ghRead(c)).links; } catch (e) { links = []; }
+    return HTML(VIEW_PAGE(links, role));
   }
-  return HTML(VIEW_PAGE(links));
+
+  if (request.method === 'POST') {
+    const body = await readBody();
+    const action = body.action;
+
+    if (action === 'login') {
+      if (String(body.pw || '') !== c.viewPw) return HTML(VIEW_LOGIN('密码不对'), 401);
+      const cookie = `${COOKIE}=${encodeURIComponent(await makeSession(c.secret, 'view'))}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_DAYS * 86400}`;
+      return new Response(null, { status: 303, headers: { location: '/map', 'set-cookie': cookie } });
+    }
+
+    if (action === 'logout') {
+      return JSONR({ ok: true }, 200, { 'set-cookie': `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` });
+    }
+
+    return JSONR({ ok: false, error: '未知操作' }, 400);
+  }
+
+  return new Response('405', { status: 405 });
 }
