@@ -13,14 +13,26 @@
       "hideHost": true
     },
     {
-      "name": "List",
-      "url": "https://list.tszheoi-law.top/",
+      "name": "Blog · ToM",
+      "url": "https://m.blog.tszheoi-law.top/",
       "tag": "",
       "hideHost": true
     },
     {
-      "name": "Mail",
-      "url": "https://mail.aliyun.com/",
+      "name": "Blog · myx",
+      "url": "https://myx.tszheoi-law.top/",
+      "tag": "",
+      "hideHost": true
+    },
+    {
+      "name": "TszTool",
+      "url": "https://tsztool.tszheoi-law.top/",
+      "tag": "",
+      "hideHost": true
+    },
+    {
+      "name": "List",
+      "url": "https://list.tszheoi-law.top/",
       "tag": "",
       "hideHost": true
     },
@@ -31,9 +43,21 @@
       "hideHost": true
     },
     {
+      "name": "Mail",
+      "url": "https://mail.aliyun.com/",
+      "tag": "",
+      "hideHost": true
+    },
+    {
       "name": "NAS",
       "url": "https://nas.tszheoi-law.top/",
       "tag": "",
+      "hideHost": true
+    },
+    {
+      "name": "Demo",
+      "url": "https://dsh-fake.tszheoi-law.top/",
+      "tag": "反诈",
       "hideHost": true
     }
   ]

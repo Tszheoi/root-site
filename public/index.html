@@ -3,14 +3,32 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#171b23" media="(prefers-color-scheme: dark)">
 <title>Tszheoi Law</title>
 <meta name="description" content="Tszheoi Law — you can call me Pelakai.">
 <style>
   :root {
-    --ink:   #2d3142;   /* 深藏青文字 */
-    --accent:#52d6a8;   /* 薄荷绿 */
-    --bg:    #ffffff;
+    color-scheme: light dark;
+    --ink:    #2d3142;   /* 深藏青文字 */
+    --soft:   #6b7280;
+    --faint:  #9aa3b2;
+    --accent: #52d6a8;   /* 薄荷绿 */
+    --accent-strong: #2fae86;
+    --bg:     #ffffff;
+    --line:   #e8ecf1;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --ink:    #e6e9ef;   /* 深色模式：浅灰为主配色 */
+      --soft:   #a9b1bf;
+      --faint:  #7c8595;
+      --accent: #52d6a8;
+      --accent-strong: #74e2bd;
+      --bg:     #171b23;
+      --line:   #2b313d;
+    }
   }
   *{box-sizing:border-box;margin:0;padding:0}
 
