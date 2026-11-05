@@ -23,6 +23,13 @@ function hostOf(u) {
   if (j >= 0) t = t.slice(0, j);
   return t;
 }
+// 把邮箱拆成两段文本节点，避免被 Cloudflare 的邮箱地址混淆改写
+function mailSafe(v) {
+  const s2 = String(v == null ? '' : v);
+  const i = s2.indexOf('@');
+  if (i < 0) return esc(s2);
+  return esc(s2.slice(0, i)) + '<i class="at"></i>' + esc(s2.slice(i + 1));
+}
 function parseCookies(header) {
   const out = {};
   if (!header) return out;
@@ -161,6 +168,7 @@ footer span{font-size:11.5px;color:var(--ink-faint);opacity:.75}
 .rv{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:var(--ink-soft);margin-top:3px;word-break:break-all}
 .rp{font-size:12px;color:var(--ink-faint);margin-top:4px}
 header .sub2{margin-top:10px;color:var(--ink-faint);font-size:13px}
+.at::after{content:"@"}
 @media(prefers-reduced-motion:reduce){a.card{transition:none}}
 `;
 
@@ -270,7 +278,7 @@ ${rows.map(r => `<div class="rec">
   <span class="rt">${esc(r.type)}</span>
   <div class="rb">
     <div class="rn">${esc(r.name)}.tszheoi-law.top</div>
-    <div class="rv">${esc(r.value)}</div>
+    <div class="rv">${mailSafe(r.value)}</div>
     <div class="rp">${esc(r.purpose)}</div>
   </div>
 </div>`).join('\n')}
